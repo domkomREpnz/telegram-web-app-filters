@@ -381,10 +381,10 @@
     <div class="filter-section">
         <h2>Стоимость, ₽/мес.</h2>
         <div class="price-inputs">
-            <input type="text" id="minPrice" placeholder="От 4000" oninput="validatePriceInput(this)">
-            <span>-</span>
-            <input type="text" id="maxPrice" placeholder="До" oninput="validatePriceInput(this)">
-        </div>
+			<input type="text" id="minPrice" placeholder="От 4000" oninput="validatePriceInput(this)" onblur="validatePriceOnBlur(this)">
+			<span>-</span>
+			<input type="text" id="maxPrice" placeholder="До" oninput="validatePriceInput(this)" onblur="validatePriceOnBlur(this)">
+		</div>
     </div>
 
     <!-- В основном окне выбора микрорайонов -->
@@ -475,10 +475,36 @@
         });
     });
 
-    // Валидация ввода цены
-    function validatePriceInput(input) {
-        input.value = input.value.replace(/\D/g, '');
-    }
+	// Валидация ввода цены (очистка от нечисловых символов)
+	function validatePriceInput(input) {
+		input.value = input.value.replace(/\D/g, '');
+	}
+	
+	// Валидация при потере фокуса
+	function validatePriceOnBlur(input) {
+		const minPriceInput = document.getElementById('minPrice');
+		const maxPriceInput = document.getElementById('maxPrice');
+	
+		// Преобразуем значения в числа
+		const minPrice = parseInt(minPriceInput.value, 10) || 0;
+		const maxPrice = parseInt(maxPriceInput.value, 10) || 0;
+	
+		if (input === minPriceInput) {
+			// Минимальная цена не может быть меньше 4000
+			if (minPrice < 4000) {
+				minPriceInput.value = 4000;
+				alert('Минимальная цена не может быть меньше 4000 рублей.');
+			}
+		}
+	
+		if (input === maxPriceInput && minPriceInput.value) {
+			// Максимальная цена не может быть меньше минимальной
+			if (maxPrice < minPrice) {
+				maxPriceInput.value = minPrice;
+				alert('Максимальная цена не может быть меньше минимальной.');
+			}
+		}
+	}
 
     // Открытие блока выбора районов
     function openDistrictSelector() {
