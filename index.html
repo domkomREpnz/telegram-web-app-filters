@@ -771,6 +771,7 @@
 	// Функция для отправки данных в бот
 	function sendDataToBot(data) {
 		if (typeof Telegram !== 'undefined' && Telegram.WebApp && Telegram.WebApp.sendData) {
+			console.log('Отправка данных в бот:', data); // Отладка
 			Telegram.WebApp.sendData(JSON.stringify(data));
 			Telegram.WebApp.close(); // Закрываем веб-приложение после отправки
 		} else {
