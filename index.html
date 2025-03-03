@@ -766,6 +766,17 @@
 		// Обновляем состояние кнопки "Выбрать район" на карте
 		updateSelectButtonState();
 	}
+	
+	// Функция для отправки данных в бот
+    function sendDataToBot(data) {
+        if (typeof Telegram !== 'undefined' && Telegram.WebApp) {
+            Telegram.WebApp.sendData(JSON.stringify(data));
+            Telegram.WebApp.close(); // Закрываем веб-приложение после отправки
+        } else {
+            console.log('Данные для отправки:', data);
+            alert('Фильтр сохранен! Данные можно отправить в бот.');
+        }
+    }
 
     // Функция для сохранения фильтра
     function saveFilter() {
@@ -783,15 +794,19 @@
             return;
         }
 
-        alert('Фильтр сохранен!');
-        console.log('Выбранные параметры:', {
+        // Формируем объект с выбранными фильтрами
+		alert('Фильтр сохранен!');
+        const filters = {
             housingType: housingType,
             roomCounts: Array.from(document.querySelectorAll('#roomCountButtons .active')).map(btn => btn.dataset.count),
             minPrice: minPrice,
             maxPrice: maxPrice,
             districts: selectedDistricts,
             microDistricts: selectedMicroDistricts
-        });
+        };
+		
+		// Отправляем данные в бот
+        sendDataToBot(filters);
     }
 
     // Функция для выхода без сохранения
