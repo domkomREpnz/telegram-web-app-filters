@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, minimum-scale=1.0">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
+	<script src="https://api-maps.yandex.ru/2.1/?apikey=64aee918-edb7-404b-ae99-c3d58f6eb4de&lang=ru_RU" type="text/javascript"></script>
     <style>
         /* Основные стили для страницы */
         body {
@@ -362,7 +363,7 @@
             left: 50%;
             transform: translateX(-50%);
             z-index: 1000;
-            display: flex;
+			display: flex;
             align-items: center;
             background-color: white;
             border-radius: 25px;
@@ -373,10 +374,10 @@
         #searchInput {
             flex: 1;
             padding: 10px;
+			width: 150px; /* Новая ширина поля ввода */
             border: none;
             border-radius: 25px;
             font-size: 16px;
-			width: 150px; /* Новая ширина поля ввода */
             outline: none;
         }
 
@@ -995,82 +996,72 @@
 
         // Функция для поиска адреса
         function searchAddress() {
-            const query = document.getElementById('searchInput').value;
-            if (!query) {
-                alert('Пожалуйста, введите адрес для поиска.');
-                return;
-            }
-
-            const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}`;
-
-            fetch(url)
-                .then(response => response.json())
-                .then(data => {
-                    if (data.length === 0) {
-                        alert('Адрес не найден.');
-                        return;
-                    }
-
-                    const lat = parseFloat(data[0].lat);
-                    const lon = parseFloat(data[0].lon);
-                    const displayName = data[0].display_name;
-
-                    // Проверяем, инициализирована ли карта
-                    if (!map) {
-                        alert('Карта не загружена. Пожалуйста, откройте карту.');
-                        return;
-                    }
-
-                    // Центрируем карту на найденных координатах
-                    map.setView([lat, lon], 16);
-
-                    // Добавляем маркер на карту
-                    if (marker) {
-                        marker.setLatLng([lat, lon]).bindPopup(displayName).openPopup();
-                    } else {
-                        marker = L.marker([lat, lon]).addTo(map).bindPopup(displayName).openPopup();
-                    }
-                })
-                .catch(error => {
-                    console.error('Ошибка при поиске адреса:', error);
-                    alert('Произошла ошибка при поиске адреса.');
-                });
-        }
-
+			const query = document.getElementById('searchInput').value;
+			if (!query) {
+				alert('Пожалуйста, введите адрес для поиска.');
+				return;
+			}
+		
+			// Используем Яндекс.Геокодер
+			ymaps.geocode(query, { results: 1 }).then(function (res) {
+				const firstResult = res.geoObjects.get(0);
+				if (!firstResult) {
+					alert('Адрес не найден.');
+					return;
+				}
+		
+				const coordinates = firstResult.geometry.getCoordinates(); // Координаты [широта, долгота]
+				const address = firstResult.getAddressLine(); // Адрес
+		
+				// Центрируем карту Leaflet на найденных координатах
+				map.setView([coordinates[0], coordinates[1]], 16);
+		
+				// Удаляем старый маркер, если он есть
+				if (marker) {
+					map.removeLayer(marker);
+				}
+		
+				// Добавляем новый маркер на карту Leaflet
+				marker = L.marker([coordinates[0], coordinates[1]]).addTo(map)
+					.bindPopup(address)
+					.openPopup();
+			}).catch(function (error) {
+				console.error('Ошибка при геокодировании:', error);
+				alert('Произошла ошибка при поиске адреса.');
+			});
+		}
+   
         // Функция для поиска местоположения пользователя
         function locateUser() {
-            if (!navigator.geolocation) {
-                alert('Ваш браузер не поддерживает Geolocation API.');
-                return;
-            }
-
-            navigator.geolocation.getCurrentPosition(
-                (position) => {
-                    const lat = position.coords.latitude;
-                    const lon = position.coords.longitude;
-
-                    // Проверяем, инициализирована ли карта
-                    if (!map) {
-                        alert('Карта не загружена. Пожалуйста, откройте карту.');
-                        return;
-                    }
-
-                    // Центрируем карту на местоположении пользователя
-                    map.setView([lat, lon], 16);
-
-                    // Добавляем маркер на карту
-                    if (marker) {
-                        marker.setLatLng([lat, lon]).bindPopup('Вы здесь').openPopup();
-                    } else {
-                        marker = L.marker([lat, lon]).addTo(map).bindPopup('Вы здесь').openPopup();
-                    }
-                },
-                (error) => {
-                    alert('Не удалось получить ваше местоположение.');
-                    console.error('Ошибка Geolocation:', error);
-                }
-            );
-        }
+			if (!navigator.geolocation) {
+				alert('Ваш браузер не поддерживает Geolocation API.');
+				return;
+			}
+		
+			navigator.geolocation.getCurrentPosition(
+				(position) => {
+					const lat = position.coords.latitude;
+					const lon = position.coords.longitude;
+		
+					// Центрируем карту Leaflet на местоположении пользователя
+					map.setView([lat, lon], 16);
+		
+					// Удаляем старый маркер, если он есть
+					if (marker) {
+						map.removeLayer(marker);
+					}
+		
+					// Добавляем новый маркер на карту Leaflet
+					marker = L.marker([lat, lon]).addTo(map)
+						.bindPopup('Вы здесь')
+						.openPopup();
+				},
+				(error) => {
+					alert('Не удалось получить ваше местоположение.');
+					console.error('Ошибка Geolocation:', error);
+				}
+			);
+		}
     </script>
 </body>
 </html>
