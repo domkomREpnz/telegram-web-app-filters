@@ -4,7 +4,7 @@
     <title>Снять квартиру в Пензе</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, minimum-scale=1.0">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
-    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <script src="https://telegram.org/js/telegram-web-app.js?56"></script>
 	<script src="https://api-maps.yandex.ru/2.1/?apikey=64aee918-edb7-404b-ae99-c3d58f6eb4de&lang=ru_RU" type="text/javascript"></script>
     <style>
         /* Основные стили для страницы */
@@ -130,8 +130,7 @@
             font-size: 16px;
             color: #707070;
         }
-
-        <!-- возможная проблема -->
+        
 		.save-button {
             width: 90%;
             max-width: 400px;
@@ -330,7 +329,7 @@
 		.reset-all-button {
 			flex: 1;
 			padding: 12px;
-			border: none;
+			border: 1px solid #ccc;;
 			border-radius: 5px;
 			background-color: #f3f4f6;
 			color: #333;
@@ -1128,6 +1127,11 @@
 			if (selectedRoomCounts === 0) {
 				WebApp.showAlert('Пожалуйста, выберите хотя бы один тип жилья.');
 				return;
+			}
+		
+			// Проверяем цены перед сохранением
+			if (!validatePriceBeforeSave()) {
+				return; // Если проверка не прошла, прерываем выполнение
 			}
 		
 			const minPrice = document.getElementById('minPrice').value;
