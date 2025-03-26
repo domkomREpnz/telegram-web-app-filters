@@ -1260,8 +1260,8 @@
 		
 		  if (typeof Telegram !== 'undefined' && Telegram.WebApp?.sendData) {
 		    // Дополнительное сжатие через URI-кодирование
-		    const compressed = encodeURIComponent(JSON.stringify(encodedData));
-		    Telegram.WebApp.sendData(compressed);
+		    //const compressed = encodeURIComponent(JSON.stringify(encodedData));
+		    Telegram.WebApp.sendData(encodedData);
 		    Telegram.WebApp.close();
 		  } else {
 		    console.log('Данные для отправки:', encodedData);
