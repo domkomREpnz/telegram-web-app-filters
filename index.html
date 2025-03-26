@@ -1246,8 +1246,15 @@
 		}
 		
 		function checkDataSize(data) {
-		  // Упрощенная проверка (быстрее чем Blob)
-		  return JSON.stringify(data).length <= 3500; // Запас для Telegram-заголовков
+		  try {
+		    const jsonStr = JSON.stringify(data);
+		    const size = new Blob([jsonStr]).size;
+		    console.log(`Проверка размера: ${size} байт`);
+		    return size <= 3500; // Запас 15% от 4096
+		  } catch (e) {
+		    console.error("Ошибка проверки размера:", e);
+		    return false;
+		  }
 		}
 		
 		async function sendDataToBot(data) {
@@ -1256,12 +1263,11 @@
 		  if (!checkDataSize(encodedData)) {
 		    WebApp.showAlert('Слишком много выбранных фильтров. Уменьшите выбор.');
 		    return;
-		  }
+		}
 		
 		  if (typeof Telegram !== 'undefined' && Telegram.WebApp?.sendData) {
-		    // Дополнительное сжатие через URI-кодирование
-		    //const compressed = encodeURIComponent(JSON.stringify(encodedData));
-		    Telegram.WebApp.sendData(encodedData);
+		    // Правильно: конвертируем объект в JSON-строку (БЕЗ URI-кодирования)
+		    Telegram.WebApp.sendData(JSON.stringify(encodedData));
 		    Telegram.WebApp.close();
 		  } else {
 		    console.log('Данные для отправки:', encodedData);
