@@ -1118,17 +1118,6 @@
 			localStorage.setItem('selectedMicroDistricts', JSON.stringify(selectedMicroDistricts));
 		}
 
-        // Функция для отправки данных в бот
-        function sendDataToBot(data) {
-            if (typeof Telegram !== 'undefined' && Telegram.WebApp && Telegram.WebApp.sendData) {
-                console.log('Отправка данных в бот:', data); // Отладка
-                Telegram.WebApp.sendData(JSON.stringify(data));
-                Telegram.WebApp.close(); // Закрываем веб-приложение после отправки
-            } else {
-                console.log('Данные для отправки:', data);
-                WebApp.showAlert('Фильтр сохранен! Данные можно отправить в бот.');
-            }
-        }
 
         // Функция для сохранения фильтра
         function saveFilter() {
@@ -1229,19 +1218,15 @@
 		};
 		
 		function encodeForSend(filters) {
-		  // Сжимаем комнаты в битовую маску
-		  const roomMask = filters.roomCounts.reduce((mask, room) => {
-		    return mask | (1 << (ROOM_ALIASES[room] || 0));
-		  }, 0);
-		
-		  // Объединяем цены в строку
-		  const priceRange = `${filters.minPrice}-${filters.maxPrice}`;
-		
 		  return {
-		    r: roomMask, // Комнаты (битовая маска)
-		    p: priceRange, // Цены
-		    d: filters.districts.map(name => districtIds[name] || name), // Районы (ID)
-		    m: filters.microDistricts.map(name => microDistrictIds[name] || name) // Микрорайоны (ID)
+		    r: filters.roomCounts.reduce((mask, room) => mask | (1 << (ROOM_ALIASES[room] || 0)), 0),
+		    p: `${filters.minPrice}-${filters.maxPrice}`,
+		    d: filters.districts.map(name => {
+		      // Принудительно преобразуем название в ID (даже если пришло число)
+		      const id = districtIds[name];
+		      return id !== undefined ? id : name;
+		    }),
+		    m: filters.microDistricts.map(name => microDistrictIds[name] || name)
 		  };
 		}
 		
